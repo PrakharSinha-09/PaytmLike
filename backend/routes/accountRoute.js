@@ -9,26 +9,25 @@ const {authMiddleware}=require('../middleware')
 
 router.get('/balance',authMiddleware,async(req,res)=>{
     const userId=req.id
-
-    const userBalance=await Account.find({
+    const account=await Account.findOne({
         userId:userId
     })
-
+    console.log(account);
+    console.log(account.balance);
     res.json({
-        "balance":userBalance
+        balance:account.balance
     })
-
-
 })
 
 router.post("/transfer", authMiddleware, async (req, res) => {
+    const userId=req.id
     const session = await mongoose.startSession();
 
     session.startTransaction();
     const { amount, to } = req.body;
 
-    // Fetch the accounts within the transaction
-    const account = await Account.findOne({ userId: req.userId }).session(session);
+    // Fetching the accounts within the transaction
+    const account = await Account.findOne({ userId: userId }).session(session);
 
     if (!account || account.balance < amount) {
         await session.abortTransaction();
@@ -47,7 +46,7 @@ router.post("/transfer", authMiddleware, async (req, res) => {
     }
 
     // Perform the transfer
-    await Account.updateOne({ userId: req.userId }, { $inc: { balance: -amount } }).session(session);
+    await Account.updateOne({ userId: userId }, { $inc: { balance: -amount } }).session(session);
     await Account.updateOne({ userId: to }, { $inc: { balance: amount } }).session(session);
 
     // Commit the transaction
