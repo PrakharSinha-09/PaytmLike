@@ -2,9 +2,10 @@ const { jwt_secret } = require("./config");
 const jwt = require("jsonwebtoken");
 
 function authMiddleware(req,res,next){
-    const token=req.headers.authorization
+    const token=req.headers['authorization']
     const words=token.split(" ")
-    const jwtToken=words[1]
+    const jwtToken=words[2]
+    console.log(jwtToken);
 
     try {
         const decodedValue=jwt.verify(jwtToken,jwt_secret);
